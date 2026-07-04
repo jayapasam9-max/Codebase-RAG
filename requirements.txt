@@ -1,0 +1,18 @@
+# Core RAG pipeline
+sentence-transformers
+chromadb
+anthropic
+
+# API + frontend
+fastapi
+uvicorn[standard]
+streamlit
+
+# Utilities
+python-dotenv
+gitpython
+requests
+
+# Testing
+pytest
+pytest-mock
