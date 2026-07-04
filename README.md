@@ -16,6 +16,17 @@ about the code, and get answers with file/line citations.
 
 Early scaffolding — build log follows in commit history.
 
+## Roadmap
+
+- [x] Repo init + .gitignore + requirements.txt + README stub
+- [ ] Script to clone/walk a target repo and chunk files (ast-based for .py, line-based fallback for others)
+- [ ] Local embedding generation with sentence-transformers + store in ChromaDB with file/line metadata
+- [ ] RAG prompt construction + Claude Haiku API call for answer generation, with file/line citations
+- [ ] Wrap into FastAPI endpoints: /index and /query
+- [ ] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
+- [ ] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
+- [ ] Polish README with architecture explanation and setup instructions
+
 ## Setup
 
 ```bash
