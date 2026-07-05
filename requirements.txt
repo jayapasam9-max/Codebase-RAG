@@ -10,7 +10,6 @@ streamlit
 
 # Utilities
 python-dotenv
-gitpython
 requests
 
 # Testing
