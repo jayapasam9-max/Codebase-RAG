@@ -21,11 +21,33 @@ Early scaffolding — build log follows in commit history.
 - [x] Repo init + .gitignore + requirements.txt + README stub
 - [x] Script to clone/walk a target repo and chunk files (ast-based for .py, line-based fallback for others)
 - [x] Local embedding generation with sentence-transformers + store in ChromaDB with file/line metadata
-- [ ] RAG prompt construction + Claude Haiku API call for answer generation, with file/line citations
+- [x] RAG prompt construction + Claude Haiku API call for answer generation, with file/line citations
 - [ ] Wrap into FastAPI endpoints: /index and /query
 - [ ] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
 - [ ] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
 - [ ] Polish README with architecture explanation and setup instructions
+
+## Design decisions & known limitations
+
+**Retrieval sometimes ranks docs above the code that actually implements a feature.**
+Manual retrieval checks (step 3, against `psf/requests`) showed that changelog/doc
+files (`HISTORY.md`, `docs/*.rst`) can outrank the actual source code for a query,
+because prose often repeats the query's keywords more literally than code does —
+e.g. a query about "HTTP redirects" ranked `HISTORY.md` entries above the
+`SessionRedirectMixin` class that implements the behavior.
+
+Rather than fix this at the retrieval layer (e.g. reranking, hybrid search), the
+**answer-generation prompt (step 4) is told explicitly to prioritize source code
+over non-code chunks** (README/HISTORY/CHANGELOG/docs) when both are retrieved,
+and to say so — rather than guess — when no relevant source code was retrieved at
+all. This was verified with two test queries against Claude Haiku:
+
+- A query where no code chunk was retrieved in the top 5: the model correctly
+  said the implementing class wasn't present in its context, instead of
+  fabricating an answer from the docs.
+- A query where a doc chunk outranked a code chunk: the model cited only the
+  actual source function (`extract_cookies_to_jar` in `cookies.py`) and ignored
+  the higher-ranked doc chunk.
 
 ## Setup
 
