@@ -1,6 +1,6 @@
 # Codebase-RAG
 
-![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.59-FF4B4B?logo=streamlit&logoColor=white) ![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-D97757?logo=anthropic&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-1.5-6A3EA1) ![Sentence Transformers](https://img.shields.io/badge/Sentence--Transformers-5.6-FFD21E?logo=huggingface&logoColor=black) ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.59-FF4B4B?logo=streamlit&logoColor=white) ![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-D97757?logo=anthropic&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-1.5-6A3EA1) ![Sentence Transformers](https://img.shields.io/badge/Sentence--Transformers-5.6-FFD21E?logo=huggingface&logoColor=black) ![License](https://img.shields.io/badge/License-MIT-yellow.svg) ![CI](https://github.com/jayapasam9-max/Codebase-RAG/actions/workflows/ci.yml/badge.svg)
 
 A RAG-based Q&A bot for GitHub repositories. Point it at a repo, ask questions
 about the code, and get answers with file/line citations.
@@ -50,7 +50,7 @@ Early scaffolding — build log follows in commit history.
 - [x] RAG prompt construction + Claude Haiku API call for answer generation, with file/line citations
 - [x] Wrap into FastAPI endpoints: /index and /query
 - [x] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
-- [ ] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
+- [x] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
 - [ ] Polish README with architecture explanation and setup instructions
 
 ## Design decisions & known limitations
