@@ -1,6 +1,6 @@
 # Codebase-RAG
 
-![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.59-FF4B4B?logo=streamlit&logoColor=white) ![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-D97757?logo=anthropic&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-1.5-6A3EA1) ![Sentence Transformers](https://img.shields.io/badge/Sentence--Transformers-5.6-FFD21E?logo=huggingface&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white) ![Streamlit](https://img.shields.io/badge/Streamlit-1.59-FF4B4B?logo=streamlit&logoColor=white) ![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-D97757?logo=anthropic&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-1.5-6A3EA1) ![Sentence Transformers](https://img.shields.io/badge/Sentence--Transformers-5.6-FFD21E?logo=huggingface&logoColor=black) ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 A RAG-based Q&A bot for GitHub repositories. Point it at a repo, ask questions
 about the code, and get answers with file/line citations.
