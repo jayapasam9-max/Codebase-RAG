@@ -10,6 +10,8 @@ the retrieved context, and to fall back to non-code chunks only when no
 relevant code chunk was retrieved.
 """
 
+from dataclasses import dataclass
+
 import anthropic
 from dotenv import load_dotenv
 
@@ -50,6 +52,20 @@ directly from the chunk headers you were given. Never invent a citation or line 
 _cumulative_usage = {"input_tokens": 0, "output_tokens": 0}
 
 
+@dataclass
+class Usage:
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+
+
+@dataclass
+class Answer:
+    text: str
+    usage: Usage  # this call only
+    session_cost_usd: float  # cumulative across this process
+
+
 def _format_context(results: dict) -> str:
     metadatas = results["metadatas"][0]
     documents = results["documents"][0]
@@ -63,7 +79,7 @@ def _format_context(results: dict) -> str:
     return "\n\n".join(blocks)
 
 
-def answer_question(repo_name: str, question: str, n_results: int = N_RESULTS) -> str:
+def answer_question(repo_name: str, question: str, n_results: int = N_RESULTS) -> Answer:
     """Retrieve relevant chunks and ask Claude Haiku to answer with citations."""
     results = query_repo(repo_name, question, n_results=n_results)
     context = _format_context(results)
@@ -81,12 +97,13 @@ def answer_question(repo_name: str, question: str, n_results: int = N_RESULTS) -
         messages=[{"role": "user", "content": user_message}],
     )
 
-    _log_usage(response.usage)
+    usage, session_cost_usd = _log_usage(response.usage)
+    text = "".join(block.text for block in response.content if block.type == "text")
 
-    return "".join(block.text for block in response.content if block.type == "text")
+    return Answer(text=text, usage=usage, session_cost_usd=session_cost_usd)
 
 
-def _log_usage(usage) -> None:
+def _log_usage(usage) -> tuple[Usage, float]:
     _cumulative_usage["input_tokens"] += usage.input_tokens
     _cumulative_usage["output_tokens"] += usage.output_tokens
 
@@ -102,4 +119,8 @@ def _log_usage(usage) -> None:
         f"[usage] this call: {usage.input_tokens} in / {usage.output_tokens} out "
         f"(~${call_cost:.5f}) | session total: {_cumulative_usage['input_tokens']} in / "
         f"{_cumulative_usage['output_tokens']} out (~${cumulative_cost:.5f})"
+    )
+    return (
+        Usage(input_tokens=usage.input_tokens, output_tokens=usage.output_tokens, cost_usd=call_cost),
+        cumulative_cost,
     )

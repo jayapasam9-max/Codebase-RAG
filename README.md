@@ -23,7 +23,7 @@ Early scaffolding — build log follows in commit history.
 - [x] Local embedding generation with sentence-transformers + store in ChromaDB with file/line metadata
 - [x] RAG prompt construction + Claude Haiku API call for answer generation, with file/line citations
 - [x] Wrap into FastAPI endpoints: /index and /query
-- [ ] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
+- [x] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
 - [ ] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
 - [ ] Polish README with architecture explanation and setup instructions
 

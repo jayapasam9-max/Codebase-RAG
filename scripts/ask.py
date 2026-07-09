@@ -29,9 +29,9 @@ def main() -> None:
     print(f"Repo: {repo_name}")
     print(f"Question: {question}\n")
 
-    answer = answer_question(repo_name, question)
+    result = answer_question(repo_name, question)
     print("\n--- Answer ---")
-    print(answer)
+    print(result.text)
 
 
 if __name__ == "__main__":

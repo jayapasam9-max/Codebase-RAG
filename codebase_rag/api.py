@@ -35,6 +35,10 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+    session_cost_usd: float
 
 
 def _repo_name_from_url(repo_url: str) -> str:
@@ -85,8 +89,14 @@ def query_endpoint(payload: QueryRequest) -> QueryResponse:
     _ensure_indexed(payload.repo_name)
 
     try:
-        answer = answer_question(payload.repo_name, payload.question, n_results=payload.n_results)
+        result = answer_question(payload.repo_name, payload.question, n_results=payload.n_results)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    return QueryResponse(answer=answer)
+    return QueryResponse(
+        answer=result.text,
+        input_tokens=result.usage.input_tokens,
+        output_tokens=result.usage.output_tokens,
+        cost_usd=result.usage.cost_usd,
+        session_cost_usd=result.session_cost_usd,
+    )
