@@ -3,6 +3,15 @@
 A RAG-based Q&A bot for GitHub repositories. Point it at a repo, ask questions
 about the code, and get answers with file/line citations.
 
+## Demo
+
+![Streamlit UI answering "What class represents an HTTP session?" against psf/requests, with a correct citation to src/requests/sessions.py and a running Claude Haiku spend counter](docs/images/demo-query.png)
+
+Indexed against [psf/requests](https://github.com/psf/requests) and asked
+*"What class represents an HTTP session?"* — the answer correctly cites
+`src/requests/sessions.py`, the actual source of the `Session` class, rather
+than any of the documentation pages that also mention sessions.
+
 ## Stack
 
 - **Chunking**: `ast`-based splitting for Python files (by function/class), line-based fallback for other file types

@@ -16,6 +16,9 @@ chroma_db/
 # Cloned target repos (working data, not source)
 data/repos/
 
+# Raw/uncropped screenshots — polished versions live in docs/images/
+/Screenshots/
+
 # OS / editor
 .DS_Store
 .vscode/
