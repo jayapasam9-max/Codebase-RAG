@@ -24,6 +24,11 @@ Indexed against [psf/requests](https://github.com/psf/requests) and asked
 `src/requests/sessions.py`, the actual source of the `Session` class, rather
 than any of the documentation pages that also mention sessions.
 
+![Live deployment on Streamlit Community Cloud answering "How are cookies parsed from a response?" with a correct citation to extract_cookies_to_jar in cookies.py, and the session budget cap visible in the sidebar](docs/images/demo-live-budget.png)
+
+The live deployment above, mid-session — sidebar shows the budget safeguard
+tracking real spend and query count against the demo's caps.
+
 ## Stack
 
 - **Chunking**: `ast`-based splitting for Python files (by function/class), line-based fallback for other file types
@@ -69,6 +74,12 @@ all. This was verified with two test queries against Claude Haiku:
 - A query where a doc chunk outranked a code chunk: the model cited only the
   actual source function (`extract_cookies_to_jar` in `cookies.py`) and ignored
   the higher-ranked doc chunk.
+
+**Public demo capped at $0.50 / 5 queries per session to protect API budget** —
+clone and run locally with your own key for unrestricted use. The cap lives in
+`streamlit_app.py` (`SESSION_BUDGET_LIMIT`, `MAX_QUERIES_PER_SESSION`), tracked
+per browser session via `st.session_state` so it resets only on a new session,
+not on every rerun.
 
 ## Setup
 
