@@ -3,6 +3,11 @@ sentence-transformers
 chromadb
 anthropic
 
+# ChromaDB needs a newer SQLite than the base OS provides on Streamlit Community
+# Cloud's Linux containers; swapped in via a shim at the top of streamlit_app.py.
+# No Linux wheel exists for macOS/Windows, so this only installs on Linux.
+pysqlite3-binary; sys_platform == "linux"
+
 # API + frontend
 fastapi
 uvicorn[standard]

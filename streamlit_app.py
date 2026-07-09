@@ -16,6 +16,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# ChromaDB requires a newer SQLite than the OS provides on Streamlit Community
+# Cloud's Linux containers. Swap in the bundled pysqlite3 build (installed via
+# requirements.txt on Linux only) before anything imports chromadb. Falls back
+# to the standard library silently where pysqlite3 isn't installed (e.g. local
+# macOS dev, where the system SQLite is already new enough).
+try:
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
+
 import streamlit as st
 
 from codebase_rag.generate import answer_question
