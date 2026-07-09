@@ -24,6 +24,16 @@ from codebase_rag.ingest.repo_loader import clone_repo
 
 DATA_DIR = Path(__file__).resolve().parent / "data" / "repos"
 
+# Hard safeguards for a public demo deployment (e.g. Streamlit Community Cloud)
+# so a widely-shared link can't drain the project's fixed Anthropic API budget.
+SESSION_BUDGET_LIMIT = 0.50  # USD, per browser session
+MAX_QUERIES_PER_SESSION = 5  # backup cap in case many cheap queries slip under the $ cap
+
+BUDGET_EXHAUSTED_MESSAGE = (
+    "Demo budget reached for this session. Clone the repo and run it locally "
+    "with your own Anthropic API key to keep exploring."
+)
+
 st.set_page_config(page_title="Codebase-RAG", page_icon="🔍", layout="wide")
 
 
@@ -40,6 +50,8 @@ if "history" not in st.session_state:
     st.session_state.history = []
 if "session_cost" not in st.session_state:
     st.session_state.session_cost = 0.0
+if "query_count" not in st.session_state:
+    st.session_state.query_count = 0
 
 st.title("🔍 Codebase-RAG")
 st.caption(
@@ -74,30 +86,36 @@ with st.sidebar:
     if st.session_state.indexed_repo:
         st.info(f"Currently indexed: **{st.session_state.indexed_repo}**")
 
-    st.divider()
-    st.metric("Session spend (Claude Haiku)", f"${st.session_state.session_cost:.4f}")
-
 st.header("2. Ask a question")
 
 if not st.session_state.indexed_repo:
     st.warning("Index a repository in the sidebar first.")
 else:
-    question = st.text_input(
-        "Your question", placeholder="How does this library handle HTTP redirects?"
+    budget_exhausted = (
+        st.session_state.session_cost >= SESSION_BUDGET_LIMIT
+        or st.session_state.query_count >= MAX_QUERIES_PER_SESSION
     )
-    ask_clicked = st.button("Ask", disabled=not question)
 
-    if ask_clicked:
-        with st.spinner("Retrieving relevant code and asking Claude Haiku..."):
-            try:
-                result = answer_question(st.session_state.indexed_repo, question)
-            except Exception as exc:
-                st.error(f"Failed to answer: {exc}")
-            else:
-                st.session_state.session_cost = result.session_cost_usd
-                st.session_state.history.insert(
-                    0, {"question": question, "answer": result.text, "usage": result.usage}
-                )
+    if budget_exhausted:
+        st.error(BUDGET_EXHAUSTED_MESSAGE)
+    else:
+        question = st.text_input(
+            "Your question", placeholder="How does this library handle HTTP redirects?"
+        )
+        ask_clicked = st.button("Ask", disabled=not question)
+
+        if ask_clicked:
+            with st.spinner("Retrieving relevant code and asking Claude Haiku..."):
+                try:
+                    result = answer_question(st.session_state.indexed_repo, question)
+                except Exception as exc:
+                    st.error(f"Failed to answer: {exc}")
+                else:
+                    st.session_state.session_cost = result.session_cost_usd
+                    st.session_state.query_count += 1
+                    st.session_state.history.insert(
+                        0, {"question": question, "answer": result.text, "usage": result.usage}
+                    )
 
     for entry in st.session_state.history:
         with st.container(border=True):
@@ -108,3 +126,15 @@ else:
                 f"{usage.input_tokens} in / {usage.output_tokens} out tokens "
                 f"(~${usage.cost_usd:.5f} this call)"
             )
+
+# Rendered after the ask-handling above (not in the earlier sidebar block) so it
+# reflects a call that just completed in this same rerun, rather than lagging one
+# interaction behind — Streamlit sidebar elements render in call order, independent
+# of where in the main-body script flow they're issued.
+with st.sidebar:
+    st.divider()
+    st.metric(
+        "Session spend (Claude Haiku)",
+        f"${st.session_state.session_cost:.4f} / ${SESSION_BUDGET_LIMIT:.2f} limit",
+    )
+    st.caption(f"Queries used: {st.session_state.query_count} / {MAX_QUERIES_PER_SESSION}")
