@@ -7,6 +7,16 @@ about the code, and get answers with file/line citations.
 
 ## Demo
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://codebase-rag678567.streamlit.app)
+
+**[Live demo →](https://codebase-rag678567.streamlit.app)** — paste a repo URL, index it, and ask it questions yourself.
+
+> The demo session has a hard cap ($0.50 / 5 queries) so a shared public link
+> can't drain the project's API budget — see [Design decisions](#design-decisions--known-limitations).
+> It also runs on an ephemeral container, so a fresh deploy means re-indexing.
+> For unrestricted use, clone the repo and run it locally with your own
+> `ANTHROPIC_API_KEY` (see [Setup](#setup)).
+
 ![Streamlit UI answering "What class represents an HTTP session?" against psf/requests, with a correct citation to src/requests/sessions.py and a running Claude Haiku spend counter](docs/images/demo-query.png)
 
 Indexed against [psf/requests](https://github.com/psf/requests) and asked
