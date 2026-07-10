@@ -29,6 +29,44 @@ than any of the documentation pages that also mention sessions.
 The live deployment above, mid-session — sidebar shows the budget safeguard
 tracking real spend and query count against the demo's caps.
 
+## Architecture
+
+```
+GitHub repo URL
+      │
+      ▼
+ clone_repo()                 codebase_rag/ingest/repo_loader.py
+      │                       (shallow git clone; skips vendored/binary/oversized files)
+      ▼
+ chunk_file()                 codebase_rag/ingest/chunker.py
+      │                       ast-based split by function/class for .py,
+      │                       line-based fallback (with overlap) for everything else
+      ▼
+ embed_texts()                codebase_rag/embed.py
+      │                       sentence-transformers, local — no API cost
+      ▼
+ ChromaDB collection          codebase_rag/store.py
+      │                       one collection per repo, reset on re-index
+      │
+      │   query_repo()  ◄──────────────────  user's question
+      ▼
+ top-k chunks + file/line metadata
+      │
+      ▼
+ answer_question()            codebase_rag/generate.py
+      │                       RAG prompt (prioritizes code over docs — see
+      │                       "Design decisions" below) + Claude Haiku, cited answer
+      ▼
+ FastAPI (/index, /query)          Streamlit UI
+ codebase_rag/api.py               streamlit_app.py
+```
+
+The Streamlit app and FastAPI app are two independent interfaces over the same
+`codebase_rag` package — Streamlit calls it directly in-process (simplest for a
+single-user demo); FastAPI exposes it as a JSON API for other consumers. Both
+end at the same `index_repo()` / `answer_question()` functions, so indexing and
+retrieval logic isn't duplicated between them.
+
 ## Stack
 
 - **Chunking**: `ast`-based splitting for Python files (by function/class), line-based fallback for other file types
@@ -38,9 +76,72 @@ tracking real spend and query count against the demo's caps.
 - **Backend**: FastAPI (`/index`, `/query`)
 - **Frontend**: Streamlit
 
-## Status
+## Project structure
 
-Early scaffolding — build log follows in commit history.
+```
+codebase_rag/
+├── ingest/
+│   ├── repo_loader.py   clone/walk a target repo
+│   └── chunker.py       ast-based + line-based chunking
+├── embed.py             local sentence-transformers embeddings
+├── store.py             ChromaDB persistence (one collection per repo)
+├── index.py             chunk → embed → store → retrieve
+├── generate.py          RAG prompt + Claude Haiku call, with citations
+└── api.py               FastAPI /index and /query endpoints
+streamlit_app.py          Streamlit frontend (calls codebase_rag directly)
+scripts/                  one-off CLI scripts used during development
+tests/                    pytest suite (chunking, retrieval, mocked LLM calls)
+.github/workflows/        CI
+```
+
+## Setup
+
+```bash
+git clone https://github.com/jayapasam9-max/Codebase-RAG.git
+cd Codebase-RAG
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Indexing works without any credentials (embeddings are local). Answer
+generation needs an Anthropic API key — put it in a `.env` file at the repo
+root (already gitignored):
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Run the Streamlit app (recommended)
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Paste a GitHub repo URL, click **Index repository**, then ask questions.
+
+### Or use the FastAPI backend directly
+
+```bash
+uvicorn codebase_rag.api:app --reload
+```
+
+```bash
+curl -X POST localhost:8000/index -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/psf/requests.git"}'
+
+curl -X POST localhost:8000/query -H "Content-Type: application/json" \
+  -d '{"repo_name": "requests", "question": "What class represents an HTTP session?"}'
+```
+
+### Run the tests
+
+```bash
+pytest
+```
+
+The whole suite runs offline — the Anthropic client is patched out at the
+class level, so it never spends API credit and never needs a real key.
 
 ## Roadmap
 
@@ -51,7 +152,7 @@ Early scaffolding — build log follows in commit history.
 - [x] Wrap into FastAPI endpoints: /index and /query
 - [x] Streamlit frontend: paste repo URL, index, ask questions, see cited answers
 - [x] Basic tests (chunking logic + retrieval sanity checks, mocked LLM call) + GitHub Actions CI workflow
-- [ ] Polish README with architecture explanation and setup instructions
+- [x] Polish README with architecture explanation and setup instructions
 
 ## Design decisions & known limitations
 
@@ -81,15 +182,6 @@ clone and run locally with your own key for unrestricted use. The cap lives in
 per browser session via `st.session_state` so it resets only on a new session,
 not on every rerun.
 
-## Setup
+## License
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-You'll need an `ANTHROPIC_API_KEY` set in your environment (or a `.env` file)
-to use answer generation.
-
-More setup and architecture details to come as the project is built out.
+MIT — see [LICENSE](LICENSE).
